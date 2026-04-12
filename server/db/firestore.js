@@ -32,6 +32,23 @@ export const getMessages = async ({ limit, ascending = true } = {}) => {
   }));
 };
 
+export const clearMessages = async () => {
+  const snapshot = await collections.messages.get();
+
+  if (snapshot.empty) {
+    return 0;
+  }
+
+  const batch = db.batch();
+
+  snapshot.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+
+  await batch.commit();
+  return snapshot.size;
+};
+
 export const createUploadedDocument = async ({
   title,
   content,

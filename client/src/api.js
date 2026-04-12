@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "/api");
 
 const request = async (path, options = {}) => {
   const response = await fetch(`${API_BASE_URL}${path}`, options);
@@ -12,6 +16,11 @@ const request = async (path, options = {}) => {
 };
 
 export const fetchHistory = () => request("/history");
+
+export const clearHistory = () =>
+  request("/history", {
+    method: "DELETE",
+  });
 
 export const sendMessage = (message) =>
   request("/chat", {

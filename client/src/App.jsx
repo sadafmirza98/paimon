@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchHistory, sendMessage, uploadDocument } from "./api";
+import {
+  clearHistory,
+  fetchHistory,
+  sendMessage,
+  uploadDocument,
+} from "./api";
 
 const App = () => {
   const [messages, setMessages] = useState([]);
@@ -9,6 +14,7 @@ const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [isUploadLoading, setIsUploadLoading] = useState(false);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
   const [error, setError] = useState("");
   const [uploadStatus, setUploadStatus] = useState("");
   const messagesEndRef = useRef(null);
@@ -86,31 +92,61 @@ const App = () => {
     }
   };
 
+  const handleClearHistory = async () => {
+    if (isClearingHistory || isChatLoading) {
+      return;
+    }
+
+    setError("");
+    setUploadStatus("");
+    setIsClearingHistory(true);
+
+    try {
+      await clearHistory();
+      setMessages([]);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsClearingHistory(false);
+    }
+  };
+
   return (
     <div className="app-shell">
+      <div className="aurora aurora-one" />
+      <div className="aurora aurora-two" />
+      <div className="starlight-grid" />
+
       <aside className="sidebar">
-        <div>
-          <p className="eyebrow">PERN + AI</p>
+        <div className="sidebar-intro">
+          <p className="eyebrow">Teyvat Companion</p>
+          <div className="crest">
+            <span className="crest-star">*</span>
+            <span className="crest-ring" />
+          </div>
           <h1>Paimon AI Chatbot</h1>
           <p className="sidebar-copy">
-            Chat with an AI assistant and ground responses with your uploaded
-            notes or text files.
+            A celestial guide for your notes, ideas, and questions. Upload lore,
+            study material, or project docs and let Paimon answer with context.
           </p>
         </div>
 
         <form className="upload-card" onSubmit={handleUpload}>
-          <h2>Knowledge Upload</h2>
+          <div className="card-heading">
+            <p className="eyebrow">Archive</p>
+            <h2>Starfell Knowledge</h2>
+          </div>
           <input
             className="input"
             type="text"
-            placeholder="Document title"
+            placeholder="Chronicle title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
           <textarea
             className="textarea"
             rows="8"
-            placeholder="Paste text here for retrieval..."
+            placeholder="Paste lore, notes, or reference text for retrieval..."
             value={documentText}
             onChange={(event) => setDocumentText(event.target.value)}
           />
@@ -120,8 +156,11 @@ const App = () => {
             accept=".txt,.md,.text"
             onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
           />
+          <p className="upload-hint">
+            Paimon will search these notes when answering future questions.
+          </p>
           <button className="button secondary" type="submit">
-            {isUploadLoading ? "Uploading..." : "Upload Context"}
+            {isUploadLoading ? "Blessing the archive..." : "Add To Archive"}
           </button>
           {uploadStatus ? <p className="status success">{uploadStatus}</p> : null}
         </form>
@@ -129,19 +168,38 @@ const App = () => {
 
       <main className="chat-panel">
         <div className="chat-header">
-          <div>
-            <p className="eyebrow">AI Workspace</p>
-            <h2>Context-aware chat</h2>
+          <div className="chat-title-group">
+            <p className="eyebrow">Astral Conversation</p>
+            <h2>Paimon's Guidance Desk</h2>
+            <p className="chat-subtitle">
+              Ask naturally. Uploaded documents become part of Paimon's memory.
+            </p>
           </div>
+          <div className="header-badge">
+            <span className="header-badge-dot" />
+            RAG Enabled
+          </div>
+        </div>
+
+        <div className="toolbar">
+          <button
+            className="button ghost-button"
+            type="button"
+            onClick={handleClearHistory}
+            disabled={isClearingHistory || isChatLoading || messages.length === 0}
+          >
+            {isClearingHistory ? "Clearing..." : "Clear History"}
+          </button>
         </div>
 
         <section className="messages">
           {messages.length === 0 ? (
             <div className="empty-state">
-              <h3>Start the conversation</h3>
+              <div className="empty-sigil">*</div>
+              <h3>Begin your journey</h3>
               <p>
-                Ask anything, or upload notes so the assistant can answer with
-                extra context.
+                Ask a question, summon a summary, or upload documents so Paimon
+                can answer with world-aware context.
               </p>
             </div>
           ) : (
@@ -153,7 +211,7 @@ const App = () => {
                 <span className="message-role">
                   {message.role === "user" ? "You" : "Paimon"}
                 </span>
-                <p>{message.content}</p>
+                <p className="message-copy">{message.content}</p>
               </article>
             ))
           )}
@@ -173,15 +231,17 @@ const App = () => {
         </section>
 
         <form className="composer" onSubmit={handleSubmit}>
-          <textarea
-            className="composer-input"
-            rows="2"
-            placeholder="Type your message..."
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-          />
+          <div className="composer-shell">
+            <textarea
+              className="composer-input"
+              rows="2"
+              placeholder="Ask Paimon anything..."
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+            />
+          </div>
           <button className="button" type="submit" disabled={isChatLoading}>
-            Send
+            Send Wish
           </button>
         </form>
 
