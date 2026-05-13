@@ -1,11 +1,7 @@
-import {
-  createContext,
-  getContexts,
-  updateContext,
-  deleteContext,
-} from "../db/firestore.js";
+import { createContext, getContexts, updateContext, deleteContext } from "../db/firestore.js";
 
 export const addContext = async (req, res) => {
+  const uid = req.uid;
   const { name, description, color } = req.body;
 
   if (!name?.trim()) {
@@ -13,6 +9,7 @@ export const addContext = async (req, res) => {
   }
 
   const context = await createContext({
+    uid,
     name: name.trim(),
     description: description?.trim() || "",
     color: color || "sky",
@@ -22,19 +19,21 @@ export const addContext = async (req, res) => {
 };
 
 export const listContexts = async (req, res) => {
-  const contexts = await getContexts();
+  const uid = req.uid;
+  const contexts = await getContexts({ uid });
   res.json({ contexts });
 };
 
 export const patchContext = async (req, res) => {
+  const uid = req.uid;
   const { id } = req.params;
-  const updates = req.body;
-  const context = await updateContext(id, updates);
+  const context = await updateContext({ uid, id, updates: req.body });
   res.json({ context });
 };
 
 export const removeContext = async (req, res) => {
+  const uid = req.uid;
   const { id } = req.params;
-  await deleteContext(id);
+  await deleteContext({ uid, id });
   res.json({ message: "Context removed." });
 };

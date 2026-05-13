@@ -1,11 +1,28 @@
+import { auth } from "./firebase";
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (typeof window !== "undefined" && window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
+    ? "http://localhost:5001/api"
     : "/api");
 
+// Attach the current user's Firebase ID token to every request.
+const getAuthHeaders = async () => {
+  const user = auth.currentUser;
+  if (!user) return {};
+  const token = await user.getIdToken();
+  return { Authorization: `Bearer ${token}` };
+};
+
 const request = async (path, options = {}) => {
-  const response = await fetch(`${API_BASE_URL}${path}`, options);
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      ...authHeaders,
+      ...options.headers,
+    },
+  });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Request failed");
   return data;

@@ -1,13 +1,8 @@
-import {
-  createDecision,
-  getDecisions,
-  updateDecision,
-  deleteDecision,
-} from "../db/firestore.js";
+import { createDecision, getDecisions, updateDecision, deleteDecision, getMemories } from "../db/firestore.js";
 import { generateMemoryInsight } from "../services/aiService.js";
-import { getMemories } from "../db/firestore.js";
 
 export const addDecision = async (req, res) => {
+  const uid = req.uid;
   const { title, description, emotion, outcome, tags } = req.body;
 
   if (!title?.trim()) {
@@ -15,6 +10,7 @@ export const addDecision = async (req, res) => {
   }
 
   const decision = await createDecision({
+    uid,
     title: title.trim(),
     description: description?.trim() || "",
     emotion: emotion || "neutral",
@@ -26,30 +22,32 @@ export const addDecision = async (req, res) => {
 };
 
 export const listDecisions = async (req, res) => {
+  const uid = req.uid;
   const { limit } = req.query;
-  const decisions = await getDecisions({ limit: limit ? Number(limit) : 50 });
+  const decisions = await getDecisions({ uid, limit: limit ? Number(limit) : 50 });
   res.json({ decisions });
 };
 
 export const patchDecision = async (req, res) => {
+  const uid = req.uid;
   const { id } = req.params;
-  const updates = req.body;
-  const decision = await updateDecision(id, updates);
+  const decision = await updateDecision({ uid, id, updates: req.body });
   res.json({ decision });
 };
 
 export const removeDecision = async (req, res) => {
+  const uid = req.uid;
   const { id } = req.params;
-  await deleteDecision(id);
+  await deleteDecision({ uid, id });
   res.json({ message: "Decision removed." });
 };
 
 export const getInsights = async (req, res) => {
+  const uid = req.uid;
   const [memories, decisions] = await Promise.all([
-    getMemories({ limit: 20 }),
-    getDecisions({ limit: 15 }),
+    getMemories({ uid, limit: 20 }),
+    getDecisions({ uid, limit: 15 }),
   ]);
-
   const insight = await generateMemoryInsight({ memories, decisions });
   res.json({ insight });
 };

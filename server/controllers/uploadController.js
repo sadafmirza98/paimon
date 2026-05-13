@@ -1,30 +1,25 @@
 import { saveDocument } from "../services/ragService.js";
 
 const getTextFromUpload = (req) => {
-  if (req.file) {
-    return req.file.buffer.toString("utf-8");
-  }
-
+  if (req.file) return req.file.buffer.toString("utf-8");
   return req.body.content?.trim() || "";
 };
 
 export const uploadDocument = async (req, res) => {
+  const uid = req.uid;
   const content = getTextFromUpload(req);
-  const title =
-    req.body.title?.trim() || req.file?.originalname || "Untitled document";
+  const title = req.body.title?.trim() || req.file?.originalname || "Untitled document";
 
   if (!content) {
     return res.status(400).json({ message: "Document content is required." });
   }
 
   const document = await saveDocument({
+    uid,
     title,
     content,
     sourceType: req.file ? "file" : "pasted",
   });
 
-  res.status(201).json({
-    message: "Document uploaded successfully.",
-    document,
-  });
+  res.status(201).json({ message: "Document uploaded successfully.", document });
 };

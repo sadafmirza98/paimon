@@ -1,21 +1,6 @@
 import { createMessage, getMessages, getMemories, getContexts } from "../db/firestore.js";
 import { generateChatResponse } from "../services/aiService.js";
-import {
-  buildContextBlock,
-  retrieveRelevantDocuments,
-} from "../services/ragService.js";
-
-const saveMessage = async (role, content, metadata = {}) => {
-  return createMessage({ role, content, metadata });
-};
-
-const getRecentHistory = async (limit = 10, contextId) => {
-  const rows = await getMessages({ limit, ascending: false, contextId });
-  return rows.reverse().map((entry) => ({
-    role: entry.role,
-    content: entry.content,
-  }));
-};
+import { buildContextBlock, retrieveRelevantDocuments } from "../services/ragService.js";
 
 const buildMemoryBlock = (memories) => {
   if (!memories.length) return null;
@@ -26,6 +11,7 @@ const buildMemoryBlock = (memories) => {
 };
 
 export const chatWithAi = async (req, res) => {
+  const uid = req.uid;
   const message = req.body.message?.trim();
   const contextId = req.body.contextId || null;
 
@@ -33,30 +19,28 @@ export const chatWithAi = async (req, res) => {
     return res.status(400).json({ message: "Message is required." });
   }
 
-  const userMessage = await saveMessage("user", message, { contextId });
+  const userMessage = await createMessage({ uid, role: "user", content: message, metadata: { contextId } });
 
   const [history, documents, memories, contexts] = await Promise.all([
-    getRecentHistory(10, contextId),
-    retrieveRelevantDocuments(message),
-    getMemories({ limit: 20, contextId: contextId || undefined }),
-    contextId ? getContexts() : Promise.resolve([]),
+    getMessages({ uid, limit: 10, ascending: false, contextId }).then((rows) =>
+      rows.reverse().map((e) => ({ role: e.role, content: e.content }))
+    ),
+    retrieveRelevantDocuments(message, uid),
+    getMemories({ uid, limit: 20, contextId: contextId || undefined }),
+    contextId ? getContexts({ uid }) : Promise.resolve([]),
   ]);
 
   const activeContext = contextId ? contexts.find((c) => c.id === contextId) : null;
   const contextBlock = buildContextBlock(documents);
   const memoryBlock = buildMemoryBlock(memories);
 
-  const answer = await generateChatResponse({
-    message,
-    history,
-    contextBlock,
-    memoryBlock,
-    activeContext,
-  });
+  const answer = await generateChatResponse({ message, history, contextBlock, memoryBlock, activeContext });
 
-  const assistantMessage = await saveMessage("assistant", answer, {
-    contextId,
-    sources: documents.map((d) => ({ id: d.id, title: d.title })),
+  const assistantMessage = await createMessage({
+    uid,
+    role: "assistant",
+    content: answer,
+    metadata: { contextId, sources: documents.map((d) => ({ id: d.id, title: d.title })) },
   });
 
   res.status(201).json({

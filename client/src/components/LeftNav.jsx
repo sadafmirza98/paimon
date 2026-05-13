@@ -14,13 +14,12 @@ const CONTEXT_COLORS = {
   violet: "#b09ee0",
 };
 
-const LeftNav = ({ activeView, onViewChange, contexts, activeContextId, onContextSelect }) => {
+const LeftNav = ({ activeView, onViewChange, contexts, activeContextId, onContextSelect, user, onSignOut }) => {
   return (
     <nav className="left-nav">
       <div className="left-nav-brand">
         <div className="brand-crest">
-          <span className="brand-star">✦</span>
-          <span className="brand-ring" />
+          <img src="/paimon.png" alt="Paimon" className="brand-img" />
         </div>
         <div>
           <p className="eyebrow">Teyvat Companion</p>
@@ -85,6 +84,30 @@ const LeftNav = ({ activeView, onViewChange, contexts, activeContextId, onContex
           <span className="footer-dot" />
           <span>Memory Active</span>
         </div>
+        {user && (
+          <div className="nav-user">
+            {user.photoURL && (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || "User"}
+                className="nav-user-avatar"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            <div className="nav-user-info">
+              <span className="nav-user-name">{user.displayName || user.email}</span>
+            </div>
+            <button
+              className="nav-signout-btn"
+              onClick={onSignOut}
+              type="button"
+              title="Sign out"
+              aria-label="Sign out"
+            >
+              ⎋
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

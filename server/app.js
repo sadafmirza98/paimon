@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import requireAuth from "./middleware/auth.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import historyRoutes from "./routes/historyRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
@@ -33,12 +34,13 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.use("/api/chat", chatRoutes);
-app.use("/api/history", historyRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/memories", memoryRoutes);
-app.use("/api/decisions", decisionRoutes);
-app.use("/api/contexts", contextRoutes);
+// All routes below require a valid Firebase ID token
+app.use("/api/chat", requireAuth, chatRoutes);
+app.use("/api/history", requireAuth, historyRoutes);
+app.use("/api/upload", requireAuth, uploadRoutes);
+app.use("/api/memories", requireAuth, memoryRoutes);
+app.use("/api/decisions", requireAuth, decisionRoutes);
+app.use("/api/contexts", requireAuth, contextRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

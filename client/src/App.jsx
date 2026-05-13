@@ -6,10 +6,14 @@ import DecisionJournal from "./components/DecisionJournal";
 import Footer from "./components/Footer";
 import KnowledgeArchive from "./components/KnowledgeArchive";
 import LeftNav from "./components/LeftNav";
+import LoginPage from "./components/LoginPage";
 import MemoryTimeline from "./components/MemoryTimeline";
 import RightPanel from "./components/RightPanel";
+import { useAuth } from "./context/AuthContext";
+import { signOutUser } from "./firebase";
 
 const App = () => {
+  const { user, loading } = useAuth();
   const [activeView, setActiveView] = useState("chat");
   const [activeContextId, setActiveContextId] = useState(null);
   const [contexts, setContexts] = useState([]);
@@ -24,7 +28,25 @@ const App = () => {
     }
   };
 
-  useEffect(() => { loadContexts(); }, []);
+  useEffect(() => {
+    if (user) loadContexts();
+  }, [user]);
+
+  // Show nothing while Firebase resolves the initial auth state
+  if (loading) {
+    return (
+      <div className="auth-loading">
+        <div className="aurora aurora-one" />
+        <div className="aurora aurora-two" />
+        <div className="typing-dots">
+          <span /><span /><span />
+        </div>
+      </div>
+    );
+  }
+
+  // Not signed in — show login page
+  if (!user) return <LoginPage />;
 
   const handleContextSelect = (id) => {
     setActiveContextId(id);
@@ -40,19 +62,9 @@ const App = () => {
   const renderMainContent = () => {
     switch (activeView) {
       case "chat":
-        return (
-          <ChatPanel
-            activeContextId={activeContextId}
-            contexts={contexts}
-          />
-        );
+        return <ChatPanel activeContextId={activeContextId} contexts={contexts} />;
       case "timeline":
-        return (
-          <MemoryTimeline
-            activeContextId={activeContextId}
-            contexts={contexts}
-          />
-        );
+        return <MemoryTimeline activeContextId={activeContextId} contexts={contexts} />;
       case "decisions":
         return <DecisionJournal />;
       case "contexts":
@@ -95,6 +107,8 @@ const App = () => {
           contexts={contexts}
           activeContextId={activeContextId}
           onContextSelect={handleContextSelect}
+          user={user}
+          onSignOut={signOutUser}
         />
       </div>
 
@@ -110,10 +124,7 @@ const App = () => {
 
       {/* Right context panel — only show on chat view */}
       {activeView === "chat" && (
-        <RightPanel
-          activeContextId={activeContextId}
-          contexts={contexts}
-        />
+        <RightPanel activeContextId={activeContextId} contexts={contexts} />
       )}
 
       <Footer />

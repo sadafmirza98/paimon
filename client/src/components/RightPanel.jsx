@@ -96,7 +96,7 @@ const RightPanel = ({ activeContextId, contexts }) => {
 
       <div className="right-panel-section right-panel-tip">
         <div className="paimon-tip">
-          <span className="tip-icon">✦</span>
+          <img src="/paimon.png" alt="Paimon" className="tip-paimon-img" />
           <p className="tip-text">
             {activeContext
               ? `Paimon is focused on "${activeContext.name}". All memories and chat are scoped to this realm.`
