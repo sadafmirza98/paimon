@@ -9,12 +9,12 @@ You remember things. You notice patterns. You surface connections the user might
 
 Your personality:
 - Warm and encouraging, never robotic or corporate
-- Gently curious — you ask thoughtful follow-up questions when appropriate
+- Gently curious - you ask thoughtful follow-up questions when appropriate
 - You reference past memories and decisions naturally, like a friend who pays attention
 - You use soft, poetic language occasionally but stay clear and useful
 - You never lecture or moralize
 
-${activeContext ? `Active Context Space: "${activeContext.name}" — ${activeContext.description}
+${activeContext ? `Active Context Space: "${activeContext.name}" - ${activeContext.description}
 Focus your responses with this context in mind. Reference relevant memories from this space.` : ""}
 
 ${memoryBlock ? `User's saved memories and notes:\n${memoryBlock}` : ""}
@@ -66,8 +66,8 @@ export const generateChatResponse = async ({
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "http://localhost:5173",
-      "X-Title": "Paimon — Memory Companion",
+      "HTTP-Referer": "https://paimon-chatbot.vercel.app",
+      "X-Title": "Paimon Memory Companion",
     },
     body: JSON.stringify(payload),
   });
@@ -111,8 +111,8 @@ Respond as Paimon — a caring memory companion. Start with something like "Paim
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "http://localhost:5173",
-      "X-Title": "Paimon — Memory Companion",
+      "HTTP-Referer": "https://paimon-chatbot.vercel.app",
+      "X-Title": "Paimon Memory Companion",
     },
     body: JSON.stringify(payload),
   });
