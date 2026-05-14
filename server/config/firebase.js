@@ -17,6 +17,12 @@ for (const envVar of requiredEnvVars) {
 const privateKey = process.env.FIREBASE_PRIVATE_KEY
   .replace(/\\n/g, "\n");
 
+  console.log(
+  process.env.FIREBASE_PRIVATE_KEY
+    .slice(0, 20)
+    .split("")
+    .map(c => c.charCodeAt(0))
+);
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
