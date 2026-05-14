@@ -14,10 +14,7 @@ for (const envVar of requiredEnvVars) {
 
 // Replace escaped newlines, then strip any non-ASCII characters (e.g. em-dashes
 // that some editors/terminals substitute for hyphens when copying the key).
-const privateKey = process.env.FIREBASE_PRIVATE_KEY
-  .replace(/\\n/g, "\n")
-  // eslint-disable-next-line no-control-regex
-  .replace(/[^\x00-\x7F]/g, "");
+const privateKey = process.env.FIREBASE_PRIVATE_KEY.trim();
 
 if (!admin.apps.length) {
   admin.initializeApp({
