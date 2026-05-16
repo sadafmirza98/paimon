@@ -56,6 +56,7 @@ const App = () => {
 
   const handleViewChange = (view) => {
     setActiveView(view);
+    setActiveContextId(null);
     setNavOpen(false);
   };
 
@@ -88,6 +89,9 @@ const App = () => {
       <div className="aurora aurora-one" />
       <div className="aurora aurora-two" />
       <div className="starlight-grid" />
+      <div className="starfield" />
+      <div className="shooting-stars" />
+      <div className="shooting-stars-2" />
 
       {/* Mobile nav toggle */}
       <button

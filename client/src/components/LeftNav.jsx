@@ -52,7 +52,7 @@ const LeftNav = ({ activeView, onViewChange, contexts, activeContextId, onContex
           <ul className="nav-list">
             <li>
               <button
-                className={`nav-item context-item ${!activeContextId ? "active" : ""}`}
+                className={`nav-item context-item ${activeView === "chat" && !activeContextId ? "active" : ""}`}
                 onClick={() => onContextSelect(null)}
                 type="button"
               >
@@ -63,7 +63,7 @@ const LeftNav = ({ activeView, onViewChange, contexts, activeContextId, onContex
             {contexts.slice(0, 6).map((ctx) => (
               <li key={ctx.id}>
                 <button
-                  className={`nav-item context-item ${activeContextId === ctx.id ? "active" : ""}`}
+                  className={`nav-item context-item ${activeView === "chat" && activeContextId === ctx.id ? "active" : ""}`}
                   onClick={() => onContextSelect(ctx.id)}
                   type="button"
                 >

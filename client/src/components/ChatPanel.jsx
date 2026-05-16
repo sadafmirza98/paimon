@@ -7,17 +7,21 @@ const ChatPanel = ({ activeContextId, contexts, onMemorySaved }) => {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [isClearingHistory, setIsClearingHistory] = useState(false);
   const [error, setError] = useState("");
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const messagesEndRef = useRef(null);
 
   const activeContext = contexts?.find((c) => c.id === activeContextId);
 
   useEffect(() => {
+    setHistoryLoaded(false);
     const loadHistory = async () => {
       try {
         const data = await fetchHistory(activeContextId);
         setMessages(data.messages);
       } catch (err) {
         setError(err.message);
+      } finally {
+        setHistoryLoaded(true);
       }
     };
     loadHistory();
@@ -90,7 +94,7 @@ const ChatPanel = ({ activeContextId, contexts, onMemorySaved }) => {
             className="button ghost-button clear-btn"
             type="button"
             onClick={handleClearHistory}
-            disabled={isClearingHistory || isChatLoading || messages.length === 0}
+            disabled={isClearingHistory || isChatLoading || (messages.length === 0 && historyLoaded)}
           >
             {isClearingHistory ? "Clearing..." : "Clear"}
           </button>
