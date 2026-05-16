@@ -5,6 +5,7 @@ import ContextRealms from "./components/ContextRealms";
 import DecisionJournal from "./components/DecisionJournal";
 import Footer from "./components/Footer";
 import KnowledgeArchive from "./components/KnowledgeArchive";
+import KnowledgeSidebar from "./components/KnowledgeSidebar";
 import LeftNav from "./components/LeftNav";
 import LoginPage from "./components/LoginPage";
 import MemoryTimeline from "./components/MemoryTimeline";
@@ -18,6 +19,7 @@ const App = () => {
   const [activeContextId, setActiveContextId] = useState(null);
   const [contexts, setContexts] = useState([]);
   const [navOpen, setNavOpen] = useState(false);
+  const [knowledgeRefresh, setKnowledgeRefresh] = useState(0);
 
   const loadContexts = async () => {
     try {
@@ -77,7 +79,7 @@ const App = () => {
           />
         );
       case "archive":
-        return <KnowledgeArchive />;
+        return <KnowledgeArchive onUploaded={() => setKnowledgeRefresh((n) => n + 1)} />;
       default:
         return null;
     }
@@ -126,9 +128,12 @@ const App = () => {
         {renderMainContent()}
       </main>
 
-      {/* Right context panel — only show on chat view */}
+      {/* Right panel — chat context or knowledge sidebar */}
       {activeView === "chat" && (
         <RightPanel activeContextId={activeContextId} contexts={contexts} />
+      )}
+      {activeView === "archive" && (
+        <KnowledgeSidebar refreshTrigger={knowledgeRefresh} />
       )}
 
       <Footer />

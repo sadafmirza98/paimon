@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { uploadDocument } from "../api";
 
-const KnowledgeArchive = () => {
+const KnowledgeArchive = ({ onUploaded }) => {
   const [title, setTitle] = useState("");
   const [documentText, setDocumentText] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -28,6 +28,7 @@ const KnowledgeArchive = () => {
       setDocumentText("");
       setSelectedFile(null);
       event.target.reset();
+      onUploaded?.();
     } catch (err) {
       setError(err.message);
     } finally {

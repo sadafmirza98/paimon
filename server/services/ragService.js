@@ -26,6 +26,7 @@ export const retrieveRelevantDocuments = async (question, uid, limit = 3) => {
   const questionTokens = tokenize(question);
 
   const ranked = documents
+    .filter((doc) => !doc.forgotten)
     .map((doc) => {
       const haystack = tokenize(`${doc.title} ${doc.content}`);
       const tokenSet = new Set(haystack);

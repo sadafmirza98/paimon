@@ -53,6 +53,16 @@ export const uploadDocument = ({ title, content, file }) => {
   return request("/upload", { method: "POST", body: formData });
 };
 
+export const fetchDocuments = () => request("/upload");
+
+export const fetchDocument = (id) => request(`/upload/${id}`);
+
+export const deleteDocument = (id) => request(`/upload/${id}`, { method: "DELETE" });
+
+export const forgetDocument = (id) => request(`/upload/${id}/forget`, { method: "PATCH" });
+
+export const restoreDocument = (id) => request(`/upload/${id}/restore`, { method: "PATCH" });
+
 // ─── Memories ─────────────────────────────────────────────────────────────────
 
 export const fetchMemories = (params = {}) => {

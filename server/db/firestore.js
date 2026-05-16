@@ -43,7 +43,7 @@ export const clearMessages = async ({ uid, contextId }) => {
 
 export const createUploadedDocument = async ({ uid, title, content, sourceType }) => {
   const createdAt = new Date().toISOString();
-  const payload = { uid, title, content, sourceType, createdAt };
+  const payload = { uid, title, content, sourceType, createdAt, forgotten: false };
   const document = await col.uploadedDocuments.add(payload);
   return { id: document.id, ...payload };
 };
@@ -53,6 +53,26 @@ export const getUploadedDocuments = async ({ uid, limit } = {}) => {
   if (limit) query = query.limit(limit);
   const snapshot = await query.get();
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+export const deleteUploadedDocument = async ({ uid, id }) => {
+  if (!id) throw Object.assign(new Error("Document ID is required."), { statusCode: 400 });
+  const doc = await col.uploadedDocuments.doc(id).get();
+  if (!doc.exists || doc.data().uid !== uid) {
+    throw Object.assign(new Error("Not found."), { statusCode: 404 });
+  }
+  await col.uploadedDocuments.doc(id).delete();
+};
+
+export const updateUploadedDocument = async ({ uid, id, updates }) => {
+  if (!id) throw Object.assign(new Error("Document ID is required."), { statusCode: 400 });
+  const doc = await col.uploadedDocuments.doc(id).get();
+  if (!doc.exists || doc.data().uid !== uid) {
+    throw Object.assign(new Error("Not found."), { statusCode: 404 });
+  }
+  await col.uploadedDocuments.doc(id).update(updates);
+  const updated = await col.uploadedDocuments.doc(id).get();
+  return { id: updated.id, ...updated.data() };
 };
 
 // ─── Memories ─────────────────────────────────────────────────────────────────
