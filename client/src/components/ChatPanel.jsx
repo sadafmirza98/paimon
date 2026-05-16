@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 import { clearHistory, fetchHistory, sendMessage } from "../api";
 
 const ChatPanel = ({ activeContextId, contexts, onMemorySaved }) => {
@@ -36,14 +39,29 @@ const ChatPanel = ({ activeContextId, contexts, onMemorySaved }) => {
     const trimmedInput = input.trim();
     if (!trimmedInput || isChatLoading) return;
 
+    // Optimistic: show user message + clear input immediately
+    const optimisticUser = {
+      id: `optimistic-${Date.now()}`,
+      role: "user",
+      content: trimmedInput,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((current) => [...current, optimisticUser]);
+    setInput("");
     setError("");
     setIsChatLoading(true);
 
     try {
       const data = await sendMessage(trimmedInput, activeContextId);
-      setMessages((current) => [...current, data.userMessage, data.assistantMessage]);
-      setInput("");
+      // Replace optimistic message with real one + append assistant
+      setMessages((current) => [
+        ...current.filter((m) => m.id !== optimisticUser.id),
+        data.userMessage,
+        data.assistantMessage,
+      ]);
     } catch (err) {
+      // Remove optimistic message on failure
+      setMessages((current) => current.filter((m) => m.id !== optimisticUser.id));
       setError(err.message);
     } finally {
       setIsChatLoading(false);
@@ -118,7 +136,18 @@ const ChatPanel = ({ activeContextId, contexts, onMemorySaved }) => {
               <span className="message-role">
                 {message.role === "user" ? "You" : "✦ Paimon"}
               </span>
-              <p className="message-copy">{message.content}</p>
+              {message.role === "assistant" ? (
+                <div className="message-copy message-markdown">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <p className="message-copy">{message.content}</p>
+              )}
               <span className="message-time">
                 {message.createdAt
                   ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
